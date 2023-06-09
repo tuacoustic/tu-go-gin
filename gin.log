@@ -1,0 +1,17 @@
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /                         --> github.com/TUACOUSTIC/go-gin-example/routers.InitRouter.func1 (3 handlers)
+[GIN-debug] GET    /bar                      --> github.com/TUACOUSTIC/go-gin-example/routers.InitRouter.func2 (3 handlers)
+[GIN-debug] GET    /someJSON                 --> github.com/TUACOUSTIC/go-gin-example/routers.InitRouter.func3 (3 handlers)
+[GIN-debug] GET    /test                     --> github.com/TUACOUSTIC/go-gin-example/routers.InitRouter.func4 (4 handlers)
+[GIN-debug] GET    /long_async               --> github.com/TUACOUSTIC/go-gin-example/routers.InitRouter.func5 (4 handlers)
+[GIN-debug] GET    /long_sync                --> github.com/TUACOUSTIC/go-gin-example/routers.InitRouter.func6 (4 handlers)
+[GIN-debug] GET    /JSONP?callback=x         --> github.com/TUACOUSTIC/go-gin-example/routers.InitRouter.func7 (4 handlers)
+[GIN] 2023/06/04 - 21:03:55 | 404 |      11.023µs |             ::1 | GET      "/JSONP?callback=x"
+[GIN] 2023/06/04 - 21:04:26 | 404 |       2.275µs |             ::1 | GET      "/JSONP?callback=x"
+[GIN] 2023/06/04 - 21:04:32 | 404 |       5.183µs |             ::1 | GET      "/JSONP"
+[GIN] 2023/06/04 - 21:04:47 | 404 |       2.532µs |             ::1 | GET      "/JSONP"
+[GIN] 2023/06/04 - 21:06:02 | 404 |       2.587µs |             ::1 | GET      "/JSONP?callback=x"
+[GIN] 2023/06/04 - 21:06:17 | 404 |       2.198µs |             ::1 | GET      "/JSONP?callback=x"

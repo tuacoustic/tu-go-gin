@@ -1,0 +1,12 @@
+Tạo cert.pem và key.pem để giả lập SSL
+
+1. Cài đặt OpenSSL
+2. Mở terminal hoặc command prompt và di chuyển vào thư mục muốn lưu tệp cert.pem và key.pem
+3. Tạo tệp key.pem
+```
+openssl genpkey -algorithm RSA -out key.pem
+```
+4. Tạo tệp cert.pem dựa theo key.pem
+```
+openssl req -new -key key.pem -x509 -days 365 -out cert.pem
+```
