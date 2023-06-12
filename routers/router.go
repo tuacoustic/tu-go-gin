@@ -37,6 +37,10 @@ type Person struct {
 	Name    string `form:"name"`
 	Address string `form:"address"`
 }
+type PersonPbuf struct {
+	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Email string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+}
 
 func startPage(c *gin.Context) {
 	var person Person
@@ -349,6 +353,95 @@ func InitRouter() *gin.Engine {
 	r.POST("/bind-data", SomeHandler)
 	// End Section
 
+	// Single file
+	// Set a lower memory limit for multipart forms (default is 32 MiB)
+	r.MaxMultipartMemory = 8 << 20 // 8 MiB
+	r.POST("/upload-file", func(c *gin.Context) {
+		// single file
+		file, _ := c.FormFile("file")
+		log.Println(file.Header.Get("Content-Type"))
+
+		destination := "./uploads/" + file.Filename
+		// Upload the file to specific dst.
+		c.SaveUploadedFile(file, destination)
+
+		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+	})
+	// End Section
+
+	// Multiple files
+	r.POST("/upload-files", func(c *gin.Context) {
+		// Multipart form
+		form, _ := c.MultipartForm()
+		files := form.File["upload[]"]
+
+		for _, file := range files {
+			log.Println(file.Filename)
+			destination := "./uploads/" + file.Filename
+			// Upload the file to specific dst.
+			c.SaveUploadedFile(file, destination)
+		}
+		c.String(http.StatusOK, fmt.Sprintf("%d files uploaded!", len(files)))
+	})
+	// End Section
+
+	// Using BasicAuth middleware
+	var secrets = gin.H{
+		"foo":    gin.H{"email": "foo@bar.com", "phone": "123433"},
+		"austin": gin.H{"email": "austin@example.com", "phone": "666"},
+		"lena":   gin.H{"email": "lena@guapa.com", "phone": "523443"},
+	}
+
+	// Group using gin.BasicAuth() middleware
+	// gin.Accounts is a shortcut for map[string]string
+	authorized := r.Group("/admin", gin.BasicAuth(gin.Accounts{
+		"foo":    "bar",
+		"austin": "1234",
+		"lena":   "hello2",
+		"manu":   "4321",
+	}))
+
+	// /admin/secrets endpoint
+	// hit "localhost:8080/admin/secrets
+	authorized.GET("/secrets", func(c *gin.Context) {
+		// get user, it was set by the BasicAuth middleware
+		user := c.MustGet(gin.AuthUserKey).(string)
+		if secret, ok := secrets[user]; ok {
+			c.JSON(http.StatusOK, gin.H{"user": user, "secret": secret})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"user": user, "secret": "NO SECRET :("})
+		}
+	})
+	// End Section
+
+	// XML/JSON/YAML/ProtoBuf rendering
+	r.GET("/moreJSON", func(c *gin.Context) {
+		// You also can use a struct
+		var msg struct {
+			Name    string `json:"user"`
+			Message string
+			Number  int
+		}
+		msg.Name = "Lena"
+		msg.Message = "hey"
+		msg.Number = 123
+		// Note that msg.Name becomes "user" in the JSON
+		// Will output  :   {"user": "Lena", "Message": "hey", "Number": 123}
+		c.JSON(http.StatusOK, msg)
+	})
+	r.GET("/someXML", func(c *gin.Context) {
+		c.XML(http.StatusOK, gin.H{"message": "hey", "status": http.StatusOK})
+	})
+
+	r.GET("/someYAML", func(c *gin.Context) {
+		c.YAML(http.StatusOK, gin.H{"message": "hey", "status": http.StatusOK})
+	})
+
+	r.GET("/someProtoBuf", func(c *gin.Context) {
+		person := PersonPbuf{Name: "John Doe", Email: "johndoe@example.com"}
+		c.ProtoBuf(http.StatusOK, &person)
+	})
+	// End Section
 	return r
 	// return h2c.NewHandler(r, &http2.Server{})
 }
